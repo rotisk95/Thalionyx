@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, RotateCcw, Save, X } from 'lucide-react';
+import { Play, Square, RotateCcw, Save, X, Pause } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface VideoRecorderProps {
@@ -19,6 +19,7 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
   
   const [isRecording, setIsRecording] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +67,8 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.muted = true; // Prevent feedback
+        // Ensure video plays automatically once the stream is set
+        videoRef.current.play().catch(console.error);
       }
       
       setIsInitializing(false);
@@ -115,6 +118,9 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
           videoRef.current.srcObject = null;
           videoRef.current.src = URL.createObjectURL(blob);
           videoRef.current.muted = false;
+          videoRef.current.currentTime = 0;
+          videoRef.current.play().catch(console.error);
+          setIsPreviewPlaying(true);
         }
       };
 
@@ -136,18 +142,44 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
     }
   };
 
+  const togglePreviewPlayback = () => {
+    if (videoRef.current && isPreviewing) {
+      if (isPreviewPlaying) {
+        videoRef.current.pause();
+        setIsPreviewPlaying(false);
+      } else {
+        videoRef.current.play().catch(console.error);
+        setIsPreviewPlaying(true);
+      }
+    }
+  };
+
+  const replayPreview = () => {
+    if (videoRef.current && isPreviewing) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(console.error);
+      setIsPreviewPlaying(true);
+    }
+  };
+
   const retryRecording = () => {
     setIsPreviewing(false);
+    setIsPreviewPlaying(false);
     setRecordedBlob(null);
     setDuration(0);
     
     // Revoke previous blob URL
     if (videoRef.current?.src) {
       URL.revokeObjectURL(videoRef.current.src);
+      videoRef.current.src = '';
     }
     
     // Restart camera
-    initializeCamera();
+    if (videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(console.error);
+    }
   };
 
   const saveRecording = () => {
@@ -209,6 +241,9 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
               autoPlay
               playsInline
               className="w-full h-full object-cover"
+              onPlay={() => setIsPreviewPlaying(true)}
+              onPause={() => setIsPreviewPlaying(false)}
+              onEnded={() => setIsPreviewPlaying(false)}
             />
             
             {/* Recording Indicator */}
