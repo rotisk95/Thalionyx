@@ -67,8 +67,13 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.muted = true; // Prevent feedback
-        // Ensure video plays automatically once the stream is set
-        videoRef.current.play().catch(console.error);
+
+        // Ensure video plays once metadata is available
+        const playVideo = () => {
+          videoRef.current?.play().catch(console.error);
+          videoRef.current?.removeEventListener('loadedmetadata', playVideo);
+        };
+        videoRef.current.addEventListener('loadedmetadata', playVideo);
       }
       
       setIsInitializing(false);
@@ -178,7 +183,12 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
     if (videoRef.current) {
       videoRef.current.srcObject = streamRef.current;
       videoRef.current.muted = true;
-      videoRef.current.play().catch(console.error);
+
+      const playVideo = () => {
+        videoRef.current?.play().catch(console.error);
+        videoRef.current?.removeEventListener('loadedmetadata', playVideo);
+      };
+      videoRef.current.addEventListener('loadedmetadata', playVideo);
     }
   };
 
