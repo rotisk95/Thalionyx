@@ -264,6 +264,31 @@ export function VideoRecorder({ onRecordingComplete, onCancel }: VideoRecorderPr
                 </Badge>
               </div>
             )}
+
+            {/* Preview Controls Overlay */}
+            {isPreviewing && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="rounded-full w-10 h-10 p-0"
+                    onClick={togglePreviewPlayback}
+                  >
+                    {isPreviewPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="rounded-full w-10 h-10 p-0"
+                    onClick={replayPreview}
+                    title="Replay from start"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Controls */}

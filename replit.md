@@ -96,3 +96,4 @@ Preferred communication style: Simple, everyday language.
 
 Changelog:
 - June 14, 2025. Initial setup
+- June 14, 2025. Fixed video recording issues: Added live camera preview during recording, implemented replay functionality for preview playback, and improved video stream management
