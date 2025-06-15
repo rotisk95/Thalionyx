@@ -114,9 +114,11 @@ export function VideoPlayer({
   };
 
   const handleSeek = (value: number[]) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = value[0];
-      setCurrentTime(value[0]);
+    if (!videoRef.current) return;
+    const newTime = value[0];
+    if (Number.isFinite(newTime)) {
+      videoRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
     }
   };
 
